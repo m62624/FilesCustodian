@@ -1,8 +1,19 @@
-from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout, QAction
+from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout
+from file_json import SettingsManager
+from keys import (
+    get_index_from_text,
+    reverse_theme_mapping,
+    reverse_language_mapping,
+    language_mapping,
+    theme_mapping,
+)
+
 
 class SettingsWindow(QDialog):
     def __init__(self):
         super().__init__()
+        settings_manager = SettingsManager()
+        settings_manager.load_settings()
 
         self.setWindowTitle(self.tr("Настройки"))
         self.setGeometry(200, 200, 300, 200)
@@ -27,15 +38,27 @@ class SettingsWindow(QDialog):
         layout.addWidget(self.language_combo)
         layout.addWidget(save_button)
         self.setLayout(layout)
+        self.theme_combo.setCurrentText(
+            theme_mapping[settings_manager.get_setting("theme")]
+        )
+        self.language_combo.setCurrentText(
+            language_mapping[settings_manager.get_setting("language")]
+        )
+
+        # Создаем экземпляр SettingsManager
 
     def save_settings(self):
-        selected_theme = self.theme_combo.currentText()
-        selected_language = self.language_combo.currentText()
-        # Добавьте код для сохранения выбранного языка
-
-if __name__ == "__main__":
-    settings_window = SettingsWindow()
-    settings_window.exec_()
+        selected_theme = get_index_from_text(
+            self.theme_combo.currentText(), reverse_theme_mapping
+        )
+        selected_language = get_index_from_text(
+            self.language_combo.currentText(), reverse_language_mapping
+        )
+        print(selected_language, selected_theme)
+        settings_manager = SettingsManager()
+        settings_manager.load_settings()
+        settings_manager.save_settings("theme", selected_theme)
+        settings_manager.save_settings("language", selected_language)
 
 
 class CopyPanel(QDialog):
@@ -55,7 +78,6 @@ class CopyPanel(QDialog):
         layout = QVBoxLayout()
         # Добавьте виджеты на layout
         self.setLayout(layout)
-         
 
     def save_settings(self):
         # Добавьте код для сохранения настроек:
@@ -69,5 +91,3 @@ class CopyPanel(QDialog):
 
     def close_window(self):
         self.close()
-
-    # Добавьте методы для выбора папки-источника и папки-приемника

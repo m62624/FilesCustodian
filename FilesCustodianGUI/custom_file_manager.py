@@ -1,6 +1,13 @@
-import sys
-from PyQt5.QtWidgets import QMainWindow, QFileSystemModel, QTreeView, QVBoxLayout, QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QFileSystemModel,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+    QPushButton,
+)
 from PyQt5.QtCore import QDir
+
 
 class CustomFileManager(QMainWindow):
     def __init__(self):
@@ -18,15 +25,19 @@ class CustomFileManager(QMainWindow):
         self.tree_view = QTreeView()
         self.tree_view.setModel(self.dir_model)
         self.tree_view.setRootIndex(self.dir_model.index(home_dir))
-        
+
         # Включаем поддержку выбора нескольких элементов
         self.tree_view.setSelectionMode(QTreeView.MultiSelection)
 
         layout.addWidget(self.tree_view)
 
-        # Создаем кнопку "Выбрать"
-        select_button = QPushButton("Выбрать")
-        layout.addWidget(select_button)
+        # Создаем кнопки "Выбрать" и "Отмена"
+        select_button = QPushButton(self.tr("Выбрать"))
+        cancel_button = QPushButton(self.tr("Отмена"))
+        button_layout = QVBoxLayout()
+        button_layout.addWidget(select_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
@@ -34,6 +45,9 @@ class CustomFileManager(QMainWindow):
 
         # Привязываем действие к кнопке "Выбрать"
         select_button.clicked.connect(self.select_items)
+
+        # Привязываем действие к кнопке "Отмена"
+        cancel_button.clicked.connect(self.cancel_selection)
 
         # Список для хранения выбранных файлов и папок
         self.selected_items = []
@@ -58,11 +72,7 @@ class CustomFileManager(QMainWindow):
         for item in self.selected_items:
             print(item)
 
-def main():
-    app = QApplication(sys.argv)
-    file_manager = CustomFileManager()
-    file_manager.show()
-    sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()
+    def cancel_selection(self):
+        # Сбрасываем выделение в QTreeView
+        self.tree_view.selectionModel().clearSelection()
+        print(self.tr("Сброс выбора"))
