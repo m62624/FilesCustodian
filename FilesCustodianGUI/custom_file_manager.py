@@ -1,6 +1,13 @@
-import sys
-from PyQt5.QtWidgets import QMainWindow, QFileSystemModel, QTreeView, QVBoxLayout, QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QFileSystemModel,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+    QPushButton,
+)
 from PyQt5.QtCore import QDir
+
 
 class CustomFileManager(QMainWindow):
     def __init__(self):
@@ -18,7 +25,7 @@ class CustomFileManager(QMainWindow):
         self.tree_view = QTreeView()
         self.tree_view.setModel(self.dir_model)
         self.tree_view.setRootIndex(self.dir_model.index(home_dir))
-        
+
         # Включаем поддержку выбора нескольких элементов
         self.tree_view.setSelectionMode(QTreeView.MultiSelection)
 
@@ -69,5 +76,3 @@ class CustomFileManager(QMainWindow):
         # Сбрасываем выделение в QTreeView
         self.tree_view.selectionModel().clearSelection()
         print(self.tr("Сброс выбора"))
-
-

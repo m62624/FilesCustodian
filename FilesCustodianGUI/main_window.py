@@ -1,13 +1,57 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction,  QTreeView, QVBoxLayout, QWidget, QSplitter, QFileSystemModel
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QAction,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+    QSplitter,
+    QFileSystemModel,
+)
 from settings_window import SettingsWindow, CopyPanel
 from custom_file_manager import CustomFileManager
+from keys import (
+    language_mapping,
+    theme_mapping,
+    get_index_from_text,
+    reverse_language_mapping,
+    reverse_theme_mapping,
+)
 from PyQt5.QtCore import QDir
+from file_json import SettingsManager
+
 
 class MyMainWindow(QMainWindow):
+    def save_settings(self):
+        selected_theme = get_index_from_text(
+            self.settings_window.theme_combo.currentText(), reverse_theme_mapping
+        )
+        selected_language = get_index_from_text(
+            self.settings_window.language_combo.currentText(), reverse_language_mapping
+        )
+
+        theme_index = list(theme_mapping.keys())[
+            list(theme_mapping.values()).index(selected_theme)
+        ]
+        language_index = list(language_mapping.keys())[
+            list(language_mapping.values()).index(selected_language)
+        ]
+        settings_file_manager = SettingsManager()
+        settings_file_manager.save_settings("theme", theme_index)
+        settings_file_manager.save_settings("language", language_index)
+
     def __init__(self):
         super().__init__()
-
+        settings_file_manager = SettingsManager()
+        self.settings_window = SettingsWindow()
+        settings_file_manager.load_settings()
+        self.settings_window.theme_combo.setCurrentIndex(
+            settings_file_manager.get_setting("theme")
+        )
+        self.settings_window.language_combo.setCurrentIndex(
+            settings_file_manager.get_setting("language")
+        )
         self.setWindowTitle(self.tr("FilesCustodian v0.0.2"))
         self.setGeometry(100, 100, 700, 700)
 
@@ -24,11 +68,8 @@ class MyMainWindow(QMainWindow):
         open_copy_panel_action = QAction(self.tr("Копирование файлов"), self)
         open_copy_panel_action.triggered.connect(self.open_copy_panel)
 
-
-
         settings_menu.addAction(open_settings_action)
         settings_menu.addAction(open_copy_panel_action)
-
 
         # Создаем виджет для отображения выбранных файлов
         self.selected_files_widget = QTreeView()
@@ -66,6 +107,7 @@ def main():
     window = MyMainWindow()
     window.show()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()
