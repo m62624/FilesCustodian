@@ -33,10 +33,6 @@ class SettingsWindow(QDialog):
         selected_language = self.language_combo.currentText()
         # Добавьте код для сохранения выбранного языка
 
-if __name__ == "__main__":
-    settings_window = SettingsWindow()
-    settings_window.exec_()
-
 
 class CopyPanel(QDialog):
     def __init__(self):
@@ -70,4 +66,4 @@ class CopyPanel(QDialog):
     def close_window(self):
         self.close()
 
-    # Добавьте методы для выбора папки-источника и папки-приемника
+
