@@ -70,11 +70,4 @@ class CustomFileManager(QMainWindow):
         self.tree_view.selectionModel().clearSelection()
         print(self.tr("Сброс выбора"))
 
-def main():
-    app = QApplication(sys.argv)
-    file_manager = CustomFileManager()
-    file_manager.show()
-    sys.exit(app.exec_())
 
-if __name__ == "__main__":
-    main()

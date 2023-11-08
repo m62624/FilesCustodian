@@ -8,7 +8,7 @@ class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle(self.tr("Мое главное окно"))
+        self.setWindowTitle(self.tr("FilesCustodian v0.0.2"))
         self.setGeometry(100, 100, 700, 700)
 
         menubar = self.menuBar()
