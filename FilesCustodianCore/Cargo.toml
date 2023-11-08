@@ -5,4 +5,29 @@ version.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+pyo3 = { version = "0.19.1", features = [
+    "abi3",
+    "abi3-py37",
+    "generate-import-lib",
+    "multiple-pymethods",
+] }
+pyo3-asyncio = { version = "0.19", features = [
+    "attributes",
+    "async-std-runtime",
+    "testing",
+] }
+async-std = { version = "1.12.0", features = ["attributes"] }
+
+[package.metadata.maturin]
+category = "tool"
+
+[features]
+extension-module = ["pyo3/extension-module"]
