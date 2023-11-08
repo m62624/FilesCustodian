@@ -1,7 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QTreeView, QVBoxLayout, QWidget, QSplitter, QFileSystemModel
 from settings_window import SettingsWindow, CopyPanel
-from file_explorer import FileExplorerPanel
+from custom_file_manager import CustomFileManager
+from PyQt5.QtCore import QDir
 
 class MyMainWindow(QMainWindow):
     def __init__(self):
@@ -23,13 +24,33 @@ class MyMainWindow(QMainWindow):
         open_copy_panel_action = QAction(self.tr("Копирование файлов"), self)
         open_copy_panel_action.triggered.connect(self.open_copy_panel)
 
+
+
         settings_menu.addAction(open_settings_action)
         settings_menu.addAction(open_copy_panel_action)
 
-        # Создаем кнопку для открытия FileExplorerPanel
-        open_file_explorer_button = QPushButton(self.tr("Открыть файловый менеджер"), self)
-        open_file_explorer_button.clicked.connect(self.open_file_explorer)
-        open_file_explorer_button.setGeometry(200, 300, 300, 50)  # Устанавливаем позицию и размер кнопки
+
+        # Создаем виджет для отображения выбранных файлов
+        self.selected_files_widget = QTreeView()
+        self.selected_files_model = QFileSystemModel()
+        self.selected_files_model.setFilter(QDir.Files | QDir.AllDirs)
+        self.selected_files_widget.setModel(self.selected_files_model)
+        self.selected_files_widget.setHeaderHidden(True)
+
+        # Создаем виджет для отображения файлового менеджера
+        self.file_manager_widget = CustomFileManager()
+
+        # Создаем разделитель для размещения виджетов
+        splitter = QSplitter()
+        splitter.addWidget(self.selected_files_widget)
+        splitter.addWidget(self.file_manager_widget)
+
+        layout = QVBoxLayout()
+        layout.addWidget(splitter)
+
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
     def open_settings(self):
         settings_window = SettingsWindow()
@@ -39,13 +60,12 @@ class MyMainWindow(QMainWindow):
         copy_panel = CopyPanel()
         copy_panel.exec_()
 
-    def open_file_explorer(self):
-        #    app = QApplication(sys.argv)
-        ex = FileExplorerPanel()
-        ex.show()
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     window = MyMainWindow()
     window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
