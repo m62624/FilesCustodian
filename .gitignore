@@ -5,3 +5,4 @@
 /.записи
 /**/__pycache__
 /locales/*
+/**/main.rs
