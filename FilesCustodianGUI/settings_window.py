@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout,QMainWindow, 
+from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout, QAction
 
 class SettingsWindow(QDialog):
     def __init__(self):
@@ -38,22 +38,36 @@ if __name__ == "__main__":
     settings_window.exec_()
 
 
-class CopyPanel(QMainWindow):
+class CopyPanel(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle(self.tr("Панель копирования файлов"))
-        self.setGeometry(100, 100, 400, 300)
+        self.setWindowTitle(self.tr("Настройки копирования"))
+        self.setGeometry(200, 200, 300, 200)
 
-        menubar = self.menuBar()
+        # Добавьте код для создания виджетов:
+        # - поле для выбора папки-источника
+        # - поле для выбора папки-приемника
+        # - кнопка "Сохранить"
+        # - кнопка "Отмена"
+        # - метка для отображения ошибок
 
-        # Создаем меню "Файл"
-        file_menu = menubar.addMenu(self.tr("Файл"))
+        layout = QVBoxLayout()
+        # Добавьте виджеты на layout
+        self.setLayout(layout)
+         
 
-        # Создаем действие "Скопировать"
-        copy_action = QAction(self.tr("Скопировать"), self)
-        file_menu.addAction(copy_action)
+    def save_settings(self):
+        # Добавьте код для сохранения настроек:
+        # - папка-источник
+        # - папка-приемник
+        # - маска для фильтрации файлов
+        # - маска для фильтрации папок
 
-        # Создаем действие "Вставить"
-        paste_action = QAction(self.tr("Вставить"), self)
-        file_menu.addAction(paste_action)
+        # После сохранения настроек закройте окно:
+        self.close()
+
+    def close_window(self):
+        self.close()
+
+    # Добавьте методы для выбора папки-источника и папки-приемника
