@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog, QTreeView, QVBoxLayout, QWidget, QSplitter, QFileSystemModel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction,  QTreeView, QVBoxLayout, QWidget, QSplitter, QFileSystemModel
 from settings_window import SettingsWindow, CopyPanel
 from custom_file_manager import CustomFileManager
 from PyQt5.QtCore import QDir

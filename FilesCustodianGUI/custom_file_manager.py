@@ -24,9 +24,13 @@ class CustomFileManager(QMainWindow):
 
         layout.addWidget(self.tree_view)
 
-        # Создаем кнопку "Выбрать"
+        # Создаем кнопки "Выбрать" и "Отмена"
         select_button = QPushButton("Выбрать")
-        layout.addWidget(select_button)
+        cancel_button = QPushButton("Отмена")
+        button_layout = QVBoxLayout()
+        button_layout.addWidget(select_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
@@ -34,6 +38,9 @@ class CustomFileManager(QMainWindow):
 
         # Привязываем действие к кнопке "Выбрать"
         select_button.clicked.connect(self.select_items)
+
+        # Привязываем действие к кнопке "Отмена"
+        cancel_button.clicked.connect(self.cancel_selection)
 
         # Список для хранения выбранных файлов и папок
         self.selected_items = []
@@ -57,6 +64,11 @@ class CustomFileManager(QMainWindow):
         print("Выбранные элементы:")
         for item in self.selected_items:
             print(item)
+
+    def cancel_selection(self):
+        # Сбрасываем выделение в QTreeView
+        self.tree_view.selectionModel().clearSelection()
+        print("Сброс выбора")
 
 def main():
     app = QApplication(sys.argv)

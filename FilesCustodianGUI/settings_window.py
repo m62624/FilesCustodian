@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout, QAction
+from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout
 
 class SettingsWindow(QDialog):
     def __init__(self):
