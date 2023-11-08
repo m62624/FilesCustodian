@@ -1,9 +1,15 @@
-[package]
-name = "FilesCustodian"
-version = "0.1.0"
+[workspace]
+members = ["FilesCustodianCore"]
+resolver = "2"
+
+[workspace.package]
 edition = "2021"
+version = "0.0.1"
+authors = ["Mansur Azatbek <mansur62624@gmail.com>"]
+license = "GPL-3.0"
+description = "Backend part for copying files"
+repository = "https://github.com/m62624/FilesCustodian"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-log = "0.4.20"
+[profile.release]
+lto = true
