@@ -1,4 +1,11 @@
-from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout
+from PyQt5.QtWidgets import (
+    QDialog,
+    QLabel,
+    QComboBox,
+    QPushButton,
+    QVBoxLayout,
+    QFileDialog,
+)
 from file_json import SettingsManager
 from keys import (
     get_index_from_text,
@@ -27,6 +34,9 @@ class SettingsWindow(QDialog):
         self.language_combo = QComboBox()
         self.language_combo.addItem(self.tr("Русский"))
         self.language_combo.addItem(self.tr("Английский"))
+
+        self.path_backups_combo = QComboBox()
+        self.path_backups_combo.addItem(self.tr("По умолчанию"))
 
         save_button = QPushButton(self.tr("Сохранить"))
         save_button.clicked.connect(self.save_settings)
@@ -66,25 +76,47 @@ class CopyPanel(QDialog):
         super().__init__()
 
         self.setWindowTitle(self.tr("Настройки копирования"))
-        self.setGeometry(200, 200, 300, 200)
+        self.setGeometry(200, 200, 400, 200)
 
-        # Добавьте код для создания виджетов:
-        # - поле для выбора папки-источника
-        # - поле для выбора папки-приемника
-        # - кнопка "Сохранить"
-        # - кнопка "Отмена"
-        # - метка для отображения ошибок
+        backup_folder_label = QLabel(self.tr("Папка для бэкапов:"))
+        self.backup_folder_button = QPushButton(self.tr("Выбрать папку"))
+        self.backup_folder_button.clicked.connect(self.select_backup_folder)
+
+        save_button = QPushButton(self.tr("Сохранить"))
+        save_button.clicked.connect(self.save_settings)
+
+        cancel_button = QPushButton(self.tr("Отмена"))
+        cancel_button.clicked.connect(self.close_window)
+
+        error_label = QLabel()
+        error_label.setStyleSheet("color: red;")
 
         layout = QVBoxLayout()
-        # Добавьте виджеты на layout
+        layout.addWidget(backup_folder_label)
+        layout.addWidget(self.backup_folder_button)
+        layout.addWidget(save_button)
+        layout.addWidget(cancel_button)
+        layout.addWidget(error_label)
         self.setLayout(layout)
 
+    def select_backup_folder(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.ShowDirsOnly
+        folder_path = QFileDialog.getExistingDirectory(
+            self, self.tr("Выбрать папку для бэкапов"), options=options
+        )
+
+        if folder_path:
+            self.backup_folder_button.setText(folder_path)
+
     def save_settings(self):
-        # Добавьте код для сохранения настроек:
-        # - папка-источник
-        # - папка-приемник
-        # - маска для фильтрации файлов
-        # - маска для фильтрации папок
+        settings_manager = SettingsManager()
+        settings_manager.load_settings()
+        settings_manager.save_settings(
+            "backup_folder", self.backup_folder_button.text()
+        )
+        # Добавьте код для сохранения пути бэкапа ваших файлов
+        # settings_manager.save_settings("backup_folder", backup_folder)
 
         # После сохранения настроек закройте окно:
         self.close()

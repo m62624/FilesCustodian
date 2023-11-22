@@ -83,7 +83,7 @@ class MyMainWindow(QMainWindow):
 
         # Создаем разделитель для размещения виджетов
         splitter = QSplitter()
-        splitter.addWidget(self.selected_files_widget)
+        # splitter.addWidget(self.selected_files_widget)
         splitter.addWidget(self.file_manager_widget)
 
         layout = QVBoxLayout()
