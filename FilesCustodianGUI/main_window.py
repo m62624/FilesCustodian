@@ -3,12 +3,15 @@ from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
     QAction,
-    QTreeView,
+    QListWidget,
+    QListWidgetItem,
     QVBoxLayout,
     QWidget,
     QSplitter,
-    QFileSystemModel,
+    QFileDialog,
 )
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QDir, QSize
 from settings_window import SettingsWindow, CopyPanel
 from custom_file_manager import CustomFileManager
 from keys import (
@@ -18,7 +21,6 @@ from keys import (
     reverse_language_mapping,
     reverse_theme_mapping,
 )
-from PyQt5.QtCore import QDir
 from file_json import SettingsManager
 
 
@@ -40,6 +42,12 @@ class MyMainWindow(QMainWindow):
         settings_file_manager = SettingsManager()
         settings_file_manager.save_settings("theme", theme_index)
         settings_file_manager.save_settings("language", language_index)
+
+    def update_existing_backups(self):
+        settings_file_manager = SettingsManager()
+        settings_file_manager.load_settings()
+        existing_backups_path = settings_file_manager.get_setting("backup_folder")
+        self.existing_backups_path = existing_backups_path
 
     def __init__(self):
         super().__init__()
@@ -68,23 +76,34 @@ class MyMainWindow(QMainWindow):
         open_copy_panel_action = QAction(self.tr("Копирование файлов"), self)
         open_copy_panel_action.triggered.connect(self.open_copy_panel)
 
+        open_existing_backups_action = QAction(self.tr("Выбор существующих бэкапов"), self)
+        open_existing_backups_action.triggered.connect(self.open_existing_backups)
+
         settings_menu.addAction(open_settings_action)
         settings_menu.addAction(open_copy_panel_action)
+        settings_menu.addAction(open_existing_backups_action)
 
         # Создаем виджет для отображения выбранных файлов
-        self.selected_files_widget = QTreeView()
-        self.selected_files_model = QFileSystemModel()
-        self.selected_files_model.setFilter(QDir.Files | QDir.AllDirs)
-        self.selected_files_widget.setModel(self.selected_files_model)
-        self.selected_files_widget.setHeaderHidden(True)
+        self.selected_files_widget = QListWidget()
 
         # Создаем виджет для отображения файлового менеджера
         self.file_manager_widget = CustomFileManager()
 
+        # Создаем виджет для отображения существующих бэкапов
+        self.list_widget = QListWidget()
+        self.large_icon_size = QSize(128, 128)
+        self.small_icon_size = QSize(32, 32)
+
+        # Устанавливаем размеры иконок
+        self.list_widget.setIconSize(self.small_icon_size)
+
+        # Устанавливаем корневой путь для списка существующих бэкапов
+        self.update_existing_backups()
+
         # Создаем разделитель для размещения виджетов
         splitter = QSplitter()
-        # splitter.addWidget(self.selected_files_widget)
         splitter.addWidget(self.file_manager_widget)
+        splitter.addWidget(self.list_widget)
 
         layout = QVBoxLayout()
         layout.addWidget(splitter)
@@ -100,6 +119,26 @@ class MyMainWindow(QMainWindow):
     def open_copy_panel(self):
         copy_panel = CopyPanel()
         copy_panel.exec_()
+
+    def open_existing_backups(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.ShowDirsOnly
+        folder_path = QFileDialog.getExistingDirectory(self, "Выбрать папку с существующими бэкапами", options=options)
+
+        if folder_path:
+            settings_file_manager = SettingsManager()
+            settings_file_manager.load_settings()
+            settings_file_manager.save_settings("backup_folder", folder_path)
+            self.update_existing_backups()
+            self.list_widget.clear()
+
+            # Заполняем список существующих бэкапов
+            for entry in QDir(self.existing_backups_path).entryInfoList(QDir.NoDotAndDotDot | QDir.AllDirs):
+                item = QListWidgetItem(entry.fileName(), self.list_widget)
+                icon = QIcon(entry.filePath())
+                item.setIcon(icon)
+
+            self.list_widget.show()
 
 
 def main():
