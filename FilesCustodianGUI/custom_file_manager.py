@@ -56,8 +56,9 @@ class CopyThread(QThread):
 
     def restore_from_log(self, log_file_path):
         try:
+            total_files = sum(1 for line in open(log_file_path))
             with open(log_file_path, "r") as log_file:
-                for line in log_file:
+                for i, line in enumerate(log_file):
                     print("вот полученый путь из файла {}".format(line))
                     # Разбиваем строку на относительный путь и оригинальный путь
                     relative_path, original_path = line.strip().split("\t")
@@ -69,8 +70,12 @@ class CopyThread(QThread):
                     print("куда {}".format(original_path))
                     # Восстанавливаем файл на оригинальное место
                     shutil.copy2(restored_file_path, original_path)
+                    progress = int((i + 1) / total_files * 100)
+                    self.progress_changed.emit(progress)
         except Exception as e:
             print(f"Error restoring files: {e}")
+        finally:
+            self.finished.emit()
 
 
 class CopyProgressDialog(QDialog):
@@ -102,12 +107,12 @@ class CopyProgressDialog(QDialog):
         self.progress_bar.setValue(value)
     
     def restore (self, log_file_path):
-        self.copy_thread.start()
+        # self.copy_thread.start()
         self.copy_thread.restore_from_log(log_file_path)
-        result = self.exec_()
-        if result == QDialog.Accepted:
+        # result = self.exec_()
+        # if result == QDialog.Accepted:
             # Закрываем диалог только если он был закрыт пользователем, а не автоматически после завершения
-            self.copy_thread.wait()
+            # self.copy_thread.wait()
 
     def start_copy(self):
         self.copy_thread.start()
