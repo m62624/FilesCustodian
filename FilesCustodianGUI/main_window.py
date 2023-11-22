@@ -11,14 +11,13 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QPushButton,
     QMessageBox,
-    QDockWidget,
 )
+import os
 import shutil
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QDir, QSize
-from PyQt5.QtCore import Qt
-from settings_window import SettingsWindow, CopyPanel
-from custom_file_manager import CustomFileManager
+from settings_window import SettingsWindow
+from custom_file_manager import CustomFileManager, CopyProgressDialog
 from keys import (
     language_mapping,
     theme_mapping,
@@ -169,7 +168,13 @@ class MyMainWindow(QMainWindow):
             backup_folder_path = QDir(self.existing_backups_path).filePath(
                 selected_item.text()
             )
-            print(backup_folder_path)
+            settings_file_manager = SettingsManager()
+            settings_file_manager.load_settings()
+            copy_dialog = CopyProgressDialog(
+                [], settings_file_manager.get_setting("backup_folder")
+            )
+            print(os.path.join(backup_folder_path, "restore.log"))
+            copy_dialog.restore(os.path.join(backup_folder_path, "restore.log"))
             # paths_to_restore = [...]  # ваш список путей для восстановления
             # self.restore_files(paths_to_restore)
 
@@ -194,7 +199,6 @@ class MyMainWindow(QMainWindow):
                 )
 
                 self.delete_backup_folder(backup_folder_path)
-
 
     def delete_backup_folder(self, backup_folder_path):
         try:
@@ -224,19 +228,20 @@ class MyMainWindow(QMainWindow):
                 QMessageBox.Ok,
             )
 
-
-
     def update_backup_list(self):
-    # Очищаем модель
+        # Очищаем модель
         self.list_widget.clear()
 
         # Заполняем список существующих бэкапов
-        for entry in QDir(self.existing_backups_path).entryInfoList(QDir.NoDotAndDotDot | QDir.AllDirs):
+        for entry in QDir(self.existing_backups_path).entryInfoList(
+            QDir.NoDotAndDotDot | QDir.AllDirs
+        ):
             item = QListWidgetItem(entry.fileName(), self.list_widget)
             icon = QIcon(entry.filePath())
             item.setIcon(icon)
 
         self.list_widget.show()
+
 
 def main():
     app = QApplication(sys.argv)

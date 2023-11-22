@@ -36,9 +36,11 @@ class CopyThread(QThread):
             log_file_path = os.path.join(destination_path, "restore.log")
             with open(log_file_path, "w") as log_file:
                 for i, source in enumerate(self.sources):
-                    relative_path = os.path.relpath(source, os.path.dirname(log_file_path))
+
+                    # Используйте os.path.basename для получения имени файла или директории
+                    relative_name = os.path.basename(source)
                     shutil.copy2(source, destination_path)
-                    log_file.write(f"{relative_path}\t{source}\n")
+                    log_file.write(f"{relative_name}\t{source}\n")
                     progress = int((i + 1) / total_files * 100)
                     self.progress_changed.emit(progress)
 
@@ -51,6 +53,24 @@ class CopyThread(QThread):
         self.quit()
         # Дожидаемся завершения потока
         self.wait()
+
+    def restore_from_log(self, log_file_path):
+        try:
+            with open(log_file_path, "r") as log_file:
+                for line in log_file:
+                    print("вот полученый путь из файла {}".format(line))
+                    # Разбиваем строку на относительный путь и оригинальный путь
+                    relative_path, original_path = line.strip().split("\t")
+                    # Полный путь к файлу в папке восстановления
+                    restored_file_path = os.path.join(
+                        os.path.dirname(log_file_path), relative_path
+                    )
+                    print("откуда {}".format(restored_file_path))
+                    print("куда {}".format(original_path))
+                    # Восстанавливаем файл на оригинальное место
+                    shutil.copy2(restored_file_path, original_path)
+        except Exception as e:
+            print(f"Error restoring files: {e}")
 
 
 class CopyProgressDialog(QDialog):
@@ -80,6 +100,14 @@ class CopyProgressDialog(QDialog):
 
     def update_progress(self, value):
         self.progress_bar.setValue(value)
+    
+    def restore (self, log_file_path):
+        self.copy_thread.start()
+        self.copy_thread.restore_from_log(log_file_path)
+        result = self.exec_()
+        if result == QDialog.Accepted:
+            # Закрываем диалог только если он был закрыт пользователем, а не автоматически после завершения
+            self.copy_thread.wait()
 
     def start_copy(self):
         self.copy_thread.start()
