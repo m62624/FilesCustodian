@@ -33,10 +33,14 @@ class CopyThread(QThread):
             os.makedirs(destination_path)
 
             total_files = len(self.sources)
-            for i, source in enumerate(self.sources):
-                shutil.copy2(source, destination_path)
-                progress = int((i + 1) / total_files * 100)
-                self.progress_changed.emit(progress)
+            log_file_path = os.path.join(destination_path, "restore.log")
+            with open(log_file_path, "w") as log_file:
+                for i, source in enumerate(self.sources):
+                    relative_path = os.path.relpath(source, os.path.dirname(log_file_path))
+                    shutil.copy2(source, destination_path)
+                    log_file.write(f"{relative_path}\t{source}\n")
+                    progress = int((i + 1) / total_files * 100)
+                    self.progress_changed.emit(progress)
 
         except Exception as e:
             print(f"Error copying files: {e}")
