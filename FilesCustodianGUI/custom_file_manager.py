@@ -32,7 +32,7 @@ class CustomFileManager(QMainWindow):
         layout.addWidget(self.tree_view)
 
         # Создаем кнопки "Выбрать" и "Отмена"
-        select_button = QPushButton(self.tr("Выбрать"))
+        select_button = QPushButton(self.tr("Сделать бэкап"))
         cancel_button = QPushButton(self.tr("Отмена"))
         button_layout = QVBoxLayout()
         button_layout.addWidget(select_button)

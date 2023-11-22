@@ -102,7 +102,7 @@ class MyMainWindow(QMainWindow):
 
         # Устанавливаем корневой путь для списка существующих бэкапов
         self.update_existing_backups()
-
+        self.update_backup_list()
         # Создаем разделитель для размещения виджетов
         splitter = QSplitter()
         splitter.addWidget(self.file_manager_widget)
@@ -201,8 +201,6 @@ class MyMainWindow(QMainWindow):
             # Удаляем папку с бэкапом
             shutil.rmtree(backup_folder_path)
 
-            # Вместо pass можно добавить дополнительные действия после успешного удаления,
-            # например, обновление списка существующих бэкапов
             self.update_backup_list()
 
             # Дополнительные действия, если нужно
