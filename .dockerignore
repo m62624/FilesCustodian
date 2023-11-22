@@ -1,0 +1,10 @@
+/coverage
+/.vscode
+/docs
+/dict
+/target
+/.github
+/**/.env
+/**/pkg
+/**/pkg*
+/.cache
