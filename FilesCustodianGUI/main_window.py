@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QDockWidget,
 )
+import shutil
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QDir, QSize
 from PyQt5.QtCore import Qt
@@ -77,14 +78,12 @@ class MyMainWindow(QMainWindow):
         open_settings_action = QAction(self.tr("Язык и тема"), self)
         open_settings_action.triggered.connect(self.open_settings)
 
-        open_copy_panel_action = QAction(self.tr("Копирование файлов"), self)
-        open_copy_panel_action.triggered.connect(self.open_copy_panel)
-
-        open_existing_backups_action = QAction(self.tr("Выбор существующих бэкапов"), self)
+        open_existing_backups_action = QAction(
+            self.tr("Выбор существующих бэкапов"), self
+        )
         open_existing_backups_action.triggered.connect(self.open_existing_backups)
 
         settings_menu.addAction(open_settings_action)
-        settings_menu.addAction(open_copy_panel_action)
         settings_menu.addAction(open_existing_backups_action)
 
         # Создаем виджет для отображения выбранных файлов
@@ -109,17 +108,21 @@ class MyMainWindow(QMainWindow):
         splitter.addWidget(self.file_manager_widget)
         splitter.addWidget(self.list_widget)
 
+        # Создаем вертикальный лейаут для размещения кнопок
+        button_layout = QVBoxLayout()
+
         # Создаем кнопки для восстановления и удаления бэкапов
         restore_button = QPushButton(self.tr("Восстановить"))
         restore_button.clicked.connect(self.restore_backup)
-        # restore_button.setStyleSheet("background-color: green")  # Зеленый цвет кнопки
+        restore_button.setStyleSheet(
+            "background-color: #008080; color: white"
+        )  # Темный циан
+        # Зеленый цвет кнопки
 
         delete_button = QPushButton(self.tr("Удалить"))
         delete_button.clicked.connect(self.delete_backup)
-        delete_button.setStyleSheet("background-color: red")  # Красный цвет кнопки
+        delete_button.setStyleSheet("background-color: #c41e3a")  # Красный цвет кнопки
 
-        # Создаем вертикальный лейаут для размещения кнопок
-        button_layout = QVBoxLayout()
         button_layout.addWidget(restore_button)
         button_layout.addWidget(delete_button)
 
@@ -136,14 +139,12 @@ class MyMainWindow(QMainWindow):
         settings_window = SettingsWindow()
         settings_window.exec_()
 
-    def open_copy_panel(self):
-        copy_panel = CopyPanel()
-        copy_panel.exec_()
-
     def open_existing_backups(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ShowDirsOnly
-        folder_path = QFileDialog.getExistingDirectory(self, "Выбрать папку с существующими бэкапами", options=options)
+        folder_path = QFileDialog.getExistingDirectory(
+            self, "Выбрать папку с существующими бэкапами", options=options
+        )
 
         if folder_path:
             settings_file_manager = SettingsManager()
@@ -153,7 +154,9 @@ class MyMainWindow(QMainWindow):
             self.list_widget.clear()
 
             # Заполняем список существующих бэкапов
-            for entry in QDir(self.existing_backups_path).entryInfoList(QDir.NoDotAndDotDot | QDir.AllDirs):
+            for entry in QDir(self.existing_backups_path).entryInfoList(
+                QDir.NoDotAndDotDot | QDir.AllDirs
+            ):
                 item = QListWidgetItem(entry.fileName(), self.list_widget)
                 icon = QIcon(entry.filePath())
                 item.setIcon(icon)
@@ -163,9 +166,9 @@ class MyMainWindow(QMainWindow):
     def restore_backup(self):
         selected_item = self.list_widget.currentItem()
         if selected_item:
-            backup_folder_path = QDir(self.existing_backups_path).filePath(selected_item.text())
-            # Здесь вы можете реализовать логику восстановления из выбранного бэкапа
-            # Например, передать список путей для восстановления
+            backup_folder_path = QDir(self.existing_backups_path).filePath(
+                selected_item.text()
+            )
 
             # paths_to_restore = [...]  # ваш список путей для восстановления
             # self.restore_files(paths_to_restore)
@@ -176,28 +179,66 @@ class MyMainWindow(QMainWindow):
             reply = QMessageBox.question(
                 self,
                 self.tr("Удаление бэкапа"),
-                self.tr("Вы уверены, что хотите удалить бэкап '{}'?".format(selected_item.text())),
+                self.tr(
+                    "Вы уверены, что хотите удалить бэкап '{}'?".format(
+                        selected_item.text()
+                    )
+                ),
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No,
             )
 
             if reply == QMessageBox.Yes:
-                backup_folder_path = QDir(self.existing_backups_path).filePath(selected_item.text())
-                # Здесь вы можете реализовать логику удаления выбранного бэкапа
-                # Например, удалить папку с бэкапом
-                # delete folder with files on path
-                
-                # self.delete_backup_folder(backup_folder_path)
+                backup_folder_path = QDir(self.existing_backups_path).filePath(
+                    selected_item.text()
+                )
 
-    # Дополнительные методы для реализации логики восстановления и удаления
-    # def restore_files(self, paths_to_restore):
-    #     # Реализуйте логику восстановления файлов по переданным путям
-    #     pass
+                self.delete_backup_folder(backup_folder_path)
 
-    # def delete_backup_folder(self, backup_folder_path):
-    #     # Реализуйте логику удаления папки с бэкапом
-    #     pass
 
+    def delete_backup_folder(self, backup_folder_path):
+        try:
+            # Удаляем папку с бэкапом
+            shutil.rmtree(backup_folder_path)
+
+            # Вместо pass можно добавить дополнительные действия после успешного удаления,
+            # например, обновление списка существующих бэкапов
+            self.update_backup_list()
+
+            # Дополнительные действия, если нужно
+            # ...
+
+            QMessageBox.information(
+                self,
+                self.tr("Успех"),
+                self.tr("Бэкап успешно удален."),
+                QMessageBox.Ok,
+                QMessageBox.Ok,
+            )
+
+        except Exception as e:
+            # Обработка ошибки, если удаление не удалось
+            QMessageBox.warning(
+                self,
+                self.tr("Ошибка удаления бэкапа"),
+                self.tr("Не удалось удалить бэкап. Подробности: {}".format(str(e))),
+                QMessageBox.Ok,
+                QMessageBox.Ok,
+            )
+
+
+
+    def update_backup_list(self):
+    # Очищаем модель
+        self.list_widget.clear()
+
+        # Заполняем список существующих бэкапов
+        for entry in QDir(self.existing_backups_path).entryInfoList(QDir.NoDotAndDotDot | QDir.AllDirs):
+            item = QListWidgetItem(entry.fileName(), self.list_widget)
+            icon = QIcon(entry.filePath())
+            item.setIcon(icon)
+
+        self.list_widget.show()
 
 def main():
     app = QApplication(sys.argv)
