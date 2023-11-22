@@ -5,13 +5,83 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QPushButton,
+    QDialog,
+    QLabel,
+    QProgressBar,
 )
 from PyQt5.QtCore import QDir
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+import shutil
+import os
+from settings_window import SettingsManager
+from datetime import datetime
+
+
+class CopyThread(QThread):
+    progress_changed = pyqtSignal(int)
+
+    def __init__(self, sources, destination):
+        super().__init__()
+        self.sources = sources
+        self.destination = destination
+        
+
+    def run(self):
+        try:
+            # Создаем путь с текущей датой и временем
+            current_datetime = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+            destination_path = os.path.join(self.destination, current_datetime)
+
+            # Создаем папку назначения
+            os.makedirs(destination_path)
+
+            # Копируем файлы в новую папку
+            for source in self.sources:
+                shutil.copy2(source, destination_path)
+
+        except Exception as e:
+            print(f"Error copying files: {e}")
+
+    def emit_progress(self, progress):
+        self.progress_changed.emit(progress)
+
+
+class CopyProgressDialog(QDialog):
+    def __init__(self, sources, destination):
+        super().__init__()
+
+        self.setWindowTitle("Сохранение файлов")
+
+        layout = QVBoxLayout()
+
+        self.progress_label = QLabel("Прогресс:")
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setAlignment(Qt.AlignCenter)
+
+        cancel_button = QPushButton("Отмена")
+        cancel_button.clicked.connect(self.reject)
+
+        layout.addWidget(self.progress_label)
+        layout.addWidget(self.progress_bar)
+        layout.addWidget(cancel_button)
+
+        self.setLayout(layout)
+
+        self.copy_thread = CopyThread(sources, destination)
+        self.copy_thread.progress_changed.connect(self.update_progress)
+
+    def update_progress(self, value):
+        self.progress_bar.setValue(value)
+
+    def start_copy(self):
+        self.copy_thread.start()
+        self.exec_()
 
 
 class CustomFileManager(QMainWindow):
-    def __init__(self):
+    def __init__(self, main_window):
         super().__init__()
+        self.main_window = main_window
 
         self.setWindowTitle("Custom File Manager")
         self.setGeometry(100, 100, 700, 700)
@@ -67,10 +137,19 @@ class CustomFileManager(QMainWindow):
         self.selected_items.clear()
         self.selected_items.extend(unique_items)
 
+        settings_manager = SettingsManager()
+        settings_manager.load_settings()
         # Выводим выбранные элементы в консоль (вы можете использовать их как угодно)
-        print("Выбранные элементы:")
-        for item in self.selected_items:
-            print(item)
+        copy_dialog = CopyProgressDialog(
+            self.selected_items, settings_manager.get_setting("backup_folder")
+        )
+        copy_dialog.start_copy()
+        self.main_window.update_backup_list()
+
+        # update_backup_list()
+        # print("Выбранные элементы:")
+        # for item in self.selected_items:
+        #     print
 
     def cancel_selection(self):
         # Сбрасываем выделение в QTreeView

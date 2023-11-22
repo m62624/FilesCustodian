@@ -90,7 +90,7 @@ class MyMainWindow(QMainWindow):
         self.selected_files_widget = QListWidget()
 
         # Создаем виджет для отображения файлового менеджера
-        self.file_manager_widget = CustomFileManager()
+        self.file_manager_widget = CustomFileManager(self)
 
         # Создаем виджет для отображения существующих бэкапов
         self.list_widget = QListWidget()
@@ -169,7 +169,7 @@ class MyMainWindow(QMainWindow):
             backup_folder_path = QDir(self.existing_backups_path).filePath(
                 selected_item.text()
             )
-
+            print(backup_folder_path)
             # paths_to_restore = [...]  # ваш список путей для восстановления
             # self.restore_files(paths_to_restore)
 
