@@ -19,31 +19,34 @@ from datetime import datetime
 
 class CopyThread(QThread):
     progress_changed = pyqtSignal(int)
+    finished = pyqtSignal()
 
     def __init__(self, sources, destination):
         super().__init__()
         self.sources = sources
         self.destination = destination
-        
 
     def run(self):
         try:
-            # Создаем путь с текущей датой и временем
             current_datetime = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
             destination_path = os.path.join(self.destination, current_datetime)
-
-            # Создаем папку назначения
             os.makedirs(destination_path)
 
-            # Копируем файлы в новую папку
-            for source in self.sources:
+            total_files = len(self.sources)
+            for i, source in enumerate(self.sources):
                 shutil.copy2(source, destination_path)
+                progress = int((i + 1) / total_files * 100)
+                self.progress_changed.emit(progress)
 
         except Exception as e:
             print(f"Error copying files: {e}")
+        finally:
+            self.finished.emit()
 
-    def emit_progress(self, progress):
-        self.progress_changed.emit(progress)
+        # Завершаем цикл событий в потоке
+        self.quit()
+        # Дожидаемся завершения потока
+        self.wait()
 
 
 class CopyProgressDialog(QDialog):
@@ -69,13 +72,17 @@ class CopyProgressDialog(QDialog):
 
         self.copy_thread = CopyThread(sources, destination)
         self.copy_thread.progress_changed.connect(self.update_progress)
+        self.copy_thread.finished.connect(self.accept)
 
     def update_progress(self, value):
         self.progress_bar.setValue(value)
 
     def start_copy(self):
         self.copy_thread.start()
-        self.exec_()
+        result = self.exec_()
+        if result == QDialog.Accepted:
+            # Закрываем диалог только если он был закрыт пользователем, а не автоматически после завершения
+            self.copy_thread.wait()
 
 
 class CustomFileManager(QMainWindow):
@@ -89,19 +96,16 @@ class CustomFileManager(QMainWindow):
         layout = QVBoxLayout()
 
         self.dir_model = QFileSystemModel()
-        home_dir = QDir.homePath()  # Получаем домашнюю директорию пользователя
-        self.dir_model.setRootPath(home_dir)  # Устанавливаем домашнюю директорию
+        home_dir = QDir.homePath()
+        self.dir_model.setRootPath(home_dir)
 
         self.tree_view = QTreeView()
         self.tree_view.setModel(self.dir_model)
         self.tree_view.setRootIndex(self.dir_model.index(home_dir))
-
-        # Включаем поддержку выбора нескольких элементов
         self.tree_view.setSelectionMode(QTreeView.MultiSelection)
 
         layout.addWidget(self.tree_view)
 
-        # Создаем кнопки "Выбрать" и "Отмена"
         select_button = QPushButton(self.tr("Сделать бэкап"))
         cancel_button = QPushButton(self.tr("Отмена"))
         button_layout = QVBoxLayout()
@@ -113,39 +117,31 @@ class CustomFileManager(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        # Привязываем действие к кнопке "Выбрать"
         select_button.clicked.connect(self.select_items)
-
-        # Привязываем действие к кнопке "Отмена"
         cancel_button.clicked.connect(self.cancel_selection)
 
-        # Список для хранения выбранных файлов и папок
         self.selected_items = []
 
     def select_items(self):
         selected_indexes = self.tree_view.selectionModel().selectedIndexes()
 
-        # Создаем множество для уникальных элементов
         unique_items = set()
 
-        # Получаем пути к выбранным файлам и папкам
         for index in selected_indexes:
             file_path = self.dir_model.filePath(index)
             unique_items.add(file_path)
 
-        # Очищаем список выбранных элементов и добавляем уникальные элементы
         self.selected_items.clear()
         self.selected_items.extend(unique_items)
 
         settings_manager = SettingsManager()
         settings_manager.load_settings()
-        # Выводим выбранные элементы в консоль (вы можете использовать их как угодно)
+
         copy_dialog = CopyProgressDialog(
             self.selected_items, settings_manager.get_setting("backup_folder")
         )
         copy_dialog.start_copy()
         self.main_window.update_backup_list()
-
         # update_backup_list()
         # print("Выбранные элементы:")
         # for item in self.selected_items:
