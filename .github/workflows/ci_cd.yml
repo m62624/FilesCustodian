@@ -46,7 +46,7 @@ jobs:
 
       # Шаг для установки Python и инструментов линтинга (black, flake8, и т.д.)
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.x
 
@@ -71,7 +71,7 @@ jobs:
           docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "pytest tests/*"
 
   package-build:
-    needs: [build-image]
+    needs: [build-image,test-py]
     runs-on: ubuntu-latest
     steps:
       - name: Log in to `GitHub Docker Registry`
@@ -79,10 +79,10 @@ jobs:
       - name: Build packages 
         run: |
           docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "python FilesCustodianGUI/setup.py build; ls build; cd build/; pwd"
-          docker cp $(docker ps -lq):/main_project/build/exe.linux-x86_64-3.12/main_window .;
+          docker cp -к $(docker ps -lq):/main_project/build .;
       - name: Save package to artifacts
         uses: actions/upload-artifact@v3
         with:
           name: python-app-${{ github.run_id }}
-          path: main_window
+          path: build
           
