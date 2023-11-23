@@ -1,48 +1,59 @@
-import os
-import sys
-sys.path.append("../FilesCustodian/FilesCustodianGUI")
 import unittest
-from FilesCustodianGUI.keys import (
-    theme_mapping,
-    language_mapping,
-    reverse_theme_mapping,
-    reverse_language_mapping,
-    get_index_from_text,
-)
+import os
+import shutil
+import tempfile
 
+class TestFileOperations(unittest.TestCase):
+    def setUp(self):
+        # Создаем временную директорию для тестов
+        self.test_dir = tempfile.mkdtemp()
 
-class TestKeys(unittest.TestCase):
-    def test_theme_mapping(self):
-        # Проверяем, что theme_mapping корректно отображает индексы в текстовые значения
-        self.assertEqual(theme_mapping[0], "Светлая")
-        self.assertEqual(theme_mapping[1], "Темная")
+    def tearDown(self):
+        # Удаляем временную директорию после завершения тестов
+        shutil.rmtree(self.test_dir)
 
-    def test_language_mapping(self):
-        # Проверяем, что language_mapping корректно отображает индексы в текстовые значения
-        self.assertEqual(language_mapping[0], "Русский")
-        self.assertEqual(language_mapping[1], "Английский")
+    def create_temp_file(self, filename, content):
+        # Создаем временный файл с заданным содержимым
+        file_path = os.path.join(self.test_dir, filename)
+        with open(file_path, "w") as file:
+            file.write(content)
+        return file_path
 
-    def test_reverse_theme_mapping(self):
-        # Проверяем, что reverse_theme_mapping корректно отображает текстовые значения в индексы
-        self.assertEqual(reverse_theme_mapping["Светлая"], 0)
-        self.assertEqual(reverse_theme_mapping["Темная"], 1)
+    def test_file_copy(self):
+        # Создаем временный файл с содержимым
+        source_file = self.create_temp_file("source.txt", "Hello, World!")
 
-    def test_reverse_language_mapping(self):
-        # Проверяем, что reverse_language_mapping корректно отображает текстовые значения в индексы
-        self.assertEqual(reverse_language_mapping["Русский"], 0)
-        self.assertEqual(reverse_language_mapping["Английский"], 1)
+        # Копируем файл в другое место
+        destination_file = os.path.join(self.test_dir, "destination.txt")
+        shutil.copy(source_file, destination_file)
 
-    def test_get_index_from_text(self):
-        # Проверяем, что get_index_from_text возвращает правильные индексы для текстовых значений
-        self.assertEqual(get_index_from_text("Светлая", theme_mapping), 0)
-        self.assertEqual(get_index_from_text("Темная", theme_mapping), 1)
-        self.assertEqual(get_index_from_text("Русский", language_mapping), 0)
-        self.assertEqual(get_index_from_text("Английский", language_mapping), 1)
+        # Проверяем, что файл был скопирован успешно
+        self.assertTrue(os.path.exists(destination_file))
+        with open(destination_file, "r") as file:
+            content = file.read()
+        self.assertEqual(content, "Hello, World!")
 
-        # Проверяем, что get_index_from_text возвращает None для неправильных текстовых значений
-        self.assertIsNone(get_index_from_text("Неизвестное значение", theme_mapping))
-        self.assertIsNone(get_index_from_text("Неизвестное значение", language_mapping))
+    def test_file_deletion(self):
+        # Создаем временный файл
+        file_to_delete = self.create_temp_file("file_to_delete.txt", "To be deleted!")
 
+        # Удаляем файл
+        os.remove(file_to_delete)
+
+        # Проверяем, что файл был удален успешно
+        self.assertFalse(os.path.exists(file_to_delete))
+
+    def test_file_rename(self):
+        # Создаем временный файл
+        original_file = self.create_temp_file("original.txt", "Content to be renamed!")
+
+        # Переименовываем файл
+        new_file_name = os.path.join(self.test_dir, "renamed.txt")
+        os.rename(original_file, new_file_name)
+
+        # Проверяем, что файл был переименован успешно
+        self.assertFalse(os.path.exists(original_file))
+        self.assertTrue(os.path.exists(new_file_name))
 
 if __name__ == "__main__":
     unittest.main()

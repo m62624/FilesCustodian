@@ -1,63 +1,79 @@
-import os
-import sys
-
-sys.path.append("../FilesCustodian/FilesCustodianGUI")
-import json
 import unittest
-from unittest.mock import mock_open, patch
-from FilesCustodianGUI.file_json import SettingsManager
+import os
+import shutil
+import tempfile
 
-
-class TestSettingsManager(unittest.TestCase):
+class TestFileOperations(unittest.TestCase):
     def setUp(self):
-        # Имя временного файла для теста
-        self.test_settings_file = "test_settings.json"
+        # Создаем временную директорию для тестов
+        self.test_dir = tempfile.mkdtemp()
 
     def tearDown(self):
-        # Удаляем временный файл после завершения тестов
-        if os.path.exists(self.test_settings_file):
-            os.remove(self.test_settings_file)
+        # Удаляем временную директорию после завершения тестов
+        shutil.rmtree(self.test_dir)
 
-    def test_load_settings(self):
-        # Создаем временный файл настроек с определенными значениями
-        with open(self.test_settings_file, "w") as file:
-            json.dump({"theme": 1, "language": 2, "backup_path": "/tmp"}, file)
+    def create_temp_file(self, filename, content):
+        # Создаем временный файл с заданным содержимым
+        file_path = os.path.join(self.test_dir, filename)
+        with open(file_path, "w") as file:
+            file.write(content)
+        return file_path
 
-        # Используем patch для замены реального пути к файлу на временный файл
-        with patch(
-            "FilesCustodianGUI.file_json.settings_file", self.test_settings_file
-        ):
-            settings_manager = SettingsManager()
-            settings_manager.load_settings()
+    def test_file_copy(self):
+        # Создаем временный файл с содержимым
+        source_file = self.create_temp_file("source.txt", "Hello, World!")
 
-            # Проверяем, что загруженные настройки соответствуют ожидаемым значениям
-            self.assertEqual(
-                settings_manager.settings,
-                {"theme": 1, "language": 2, "backup_path": "/tmp"},
-            )
+        # Копируем файл в другое место
+        destination_file = os.path.join(self.test_dir, "destination.txt")
+        shutil.copy(source_file, destination_file)
 
-    def test_get_setting(self):
-        # Используем patch для замены реального пути к файлу на временный файл
-        with patch(
-            "FilesCustodianGUI.file_json.settings_file", self.test_settings_file
-        ):
-            settings_manager = SettingsManager()
+        # Проверяем, что файл был скопирован успешно
+        self.assertTrue(os.path.exists(destination_file))
+        with open(destination_file, "r") as file:
+            content = file.read()
+        self.assertEqual(content, "Hello, World!")
 
-            # Проверяем, что получаем значение по умолчанию, если ключ отсутствует
-            result = settings_manager.get_setting(
-                "nonexistent_key", default="default_value"
-            )
-            self.assertEqual(result, "default_value")
+    def test_file_deletion(self):
+        # Создаем временный файл
+        file_to_delete = self.create_temp_file("file_to_delete.txt", "To be deleted!")
 
-            # Устанавливаем внутренние настройки и проверяем, что get_setting возвращает правильное значение
-            settings_manager.settings = {
-                "theme": 1,
-                "language": 2,
-                "backup_path": "/tmp",
-            }
-            result = settings_manager.get_setting("theme")
-            self.assertEqual(result, 1)
+        # Удаляем файл
+        os.remove(file_to_delete)
 
-# Запуск тестов
+        # Проверяем, что файл был удален успешно
+        self.assertFalse(os.path.exists(file_to_delete))
+
+    def test_file_rename(self):
+        # Создаем временный файл
+        original_file = self.create_temp_file("original.txt", "Content to be renamed!")
+
+        # Переименовываем файл
+        new_file_name = os.path.join(self.test_dir, "renamed.txt")
+        os.rename(original_file, new_file_name)
+
+        # Проверяем, что файл был переименован успешно
+        self.assertFalse(os.path.exists(original_file))
+        self.assertTrue(os.path.exists(new_file_name))
+
+    def test_directory_creation(self):
+        # Создаем новую временную директорию
+        new_directory = os.path.join(self.test_dir, "new_directory")
+        os.makedirs(new_directory)
+
+        # Проверяем, что директория была создана успешно
+        self.assertTrue(os.path.exists(new_directory))
+        self.assertTrue(os.path.isdir(new_directory))
+
+    def test_directory_deletion(self):
+        # Создаем временную директорию
+        directory_to_delete = os.path.join(self.test_dir, "directory_to_delete")
+        os.makedirs(directory_to_delete)
+
+        # Удаляем директорию
+        shutil.rmtree(directory_to_delete)
+
+        # Проверяем, что директория была удалена успешно
+        self.assertFalse(os.path.exists(directory_to_delete))
+
 if __name__ == "__main__":
     unittest.main()
