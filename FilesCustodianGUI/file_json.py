@@ -10,6 +10,7 @@ class SettingsManager:
     default_settings = {
         "theme": 0,  # 0 - Тема по умолчанию
         "language": 0,  # 0 - Английский
+        "backup_path": os.path.join(os.path.expanduser("~"), "BackupsOfFilesCustodian"),
     }
 
     def __init__(self):

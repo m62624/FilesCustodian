@@ -8,6 +8,7 @@ language_mapping = {
     1: "Английский",
 }
 
+
 reverse_theme_mapping = {v: k for k, v in theme_mapping.items()}
 reverse_language_mapping = {v: k for k, v in language_mapping.items()}
 

@@ -5,3 +5,8 @@
 /.записи
 /**/__pycache__
 /locales/*
+/**/main.rs
+/.polygon
+/main_window.spec
+/build
+/dist
