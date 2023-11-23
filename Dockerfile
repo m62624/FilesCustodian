@@ -18,9 +18,12 @@ RUN pip install \
                 qt5-applications \
                 qt5-tools \
                 black \
-                setuptools;
+                setuptools \
+                pytest;
 
 RUN pip install --upgrade --pre --extra-index-url https://marcelotduarte.github.io/packages/ cx_Freeze
+
+ENV PYTHONPATH=/main_project
 
 COPY . .
 
