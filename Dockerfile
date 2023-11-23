@@ -24,4 +24,4 @@ RUN pip install --upgrade --pre --extra-index-url https://marcelotduarte.github.
 
 COPY . .
 
-CMD ['sh']
+CMD ["sh"]
