@@ -60,3 +60,44 @@ jobs:
         run: |
           black --check .
           flake8
+
+  test-py:
+    needs: [linter-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Шаг для установки Python и инструментов для тестирования (pytest, например)
+      - name: Set up Python and testing tools
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest  # Здесь укажите необходимые библиотеки для тестирования
+
+      # Шаг для запуска тестов
+      - name: Run tests
+        run: pytest FilesCustodianGUI/
+
+  package-build:
+    needs: [test-py]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to `GitHub Docker Registry`
+        run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
+      - name: Build packages 
+        run: |
+          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c " \
+          python FilesCustodianGUI/setup.py build; \
+          docker cp $(docker ps -lq):/main_project/build .; \
+          ls -a *;
+      - name: Save package to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-app-${{ github.run_id }}
+          path: build
+          
