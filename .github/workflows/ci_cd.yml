@@ -60,25 +60,25 @@ jobs:
         run: |
           black --check FilesCustodianGUI
 
-  # test-py:
-  #   needs: [linter-check]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Log in to `GitHub Docker Registry`
-  #       run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
-  #     - name: Build packages 
-  #       run: |
-  #         docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "pytest tests/*"
-
-  package-build:
-    needs: [build-image,linter-check]
+  test-py:
+    needs: [linter-check]
     runs-on: ubuntu-latest
     steps:
       - name: Log in to `GitHub Docker Registry`
         run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
       - name: Build packages 
         run: |
-          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "python FilesCustodianGUI/setup.py build; ls build"
+          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "pytest tests/*"
+
+  package-build:
+    needs: [build-image,test-py]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to `GitHub Docker Registry`
+        run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
+      - name: Build packages 
+        run: |
+          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "python FilesCustodianGUI/setup.py build; ls build; cd build/; pwd"
           docker cp $(docker ps -lq):/main_project/build/exe.linux-*/main_window .;
       - name: Save package to artifacts
         uses: actions/upload-artifact@v3
