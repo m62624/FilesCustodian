@@ -50,7 +50,8 @@ class MyMainWindow(QMainWindow):
     def update_existing_backups(self):
         settings_file_manager = SettingsManager()
         settings_file_manager.load_settings()
-        existing_backups_path = settings_file_manager.get_setting("backup_folder")
+        existing_backups_path = settings_file_manager.get_setting(
+            "backup_folder")
         self.existing_backups_path = existing_backups_path
 
     def __init__(self):
@@ -80,7 +81,8 @@ class MyMainWindow(QMainWindow):
         open_existing_backups_action = QAction(
             self.tr("Выбор существующих бэкапов"), self
         )
-        open_existing_backups_action.triggered.connect(self.open_existing_backups)
+        open_existing_backups_action.triggered.connect(
+            self.open_existing_backups)
 
         settings_menu.addAction(open_settings_action)
         settings_menu.addAction(open_existing_backups_action)
@@ -120,12 +122,14 @@ class MyMainWindow(QMainWindow):
 
         delete_button = QPushButton(self.tr("Удалить"))
         delete_button.clicked.connect(self.delete_backup)
-        delete_button.setStyleSheet("background-color: #c41e3a")  # Красный цвет кнопки
+        delete_button.setStyleSheet(
+            "background-color: #c41e3a")  # Красный цвет кнопки
 
         button_layout.addWidget(restore_button)
         button_layout.addWidget(delete_button)
 
-        # Объединяем основной разделитель и лейаут с кнопками в горизонтальный лейаут
+        # Объединяем основной разделитель и лейаут с кнопками в горизонтальный
+        # лейаут
         layout = QVBoxLayout()
         layout.addWidget(splitter)
         layout.addLayout(button_layout)
@@ -174,7 +178,10 @@ class MyMainWindow(QMainWindow):
                 [], settings_file_manager.get_setting("backup_folder")
             )
             print(os.path.join(backup_folder_path, "restore.log"))
-            copy_dialog.restore(os.path.join(backup_folder_path, "restore.log"))
+            copy_dialog.restore(
+                os.path.join(
+                    backup_folder_path,
+                    "restore.log"))
             # paths_to_restore = [...]  # ваш список путей для восстановления
             # self.restore_files(paths_to_restore)
 
@@ -223,7 +230,9 @@ class MyMainWindow(QMainWindow):
             QMessageBox.warning(
                 self,
                 self.tr("Ошибка удаления бэкапа"),
-                self.tr("Не удалось удалить бэкап. Подробности: {}".format(str(e))),
+                self.tr(
+                    "Не удалось удалить бэкап. Подробности: {}".format(
+                        str(e))),
                 QMessageBox.Ok,
                 QMessageBox.Ok,
             )
