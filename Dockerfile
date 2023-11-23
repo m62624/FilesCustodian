@@ -1,14 +1,14 @@
-FROM python:latest
+FROM python:3.12
 LABEL org.opencontainers.image.source="https://github.com/m62624/FilesCustodian"
 
 WORKDIR /main_project
 
 RUN mkdir FilesCustodianGUI dist;
-ENV VIRTUAL_ENV=FilesCustodianGUI/.env;
+ENV VIRTUAL_ENV=FilesCustodianGUI/.env
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN pip install cx_Freeze \
+RUN pip install \
                 PyQt5 \
                 altgraph \
                 click \
@@ -20,6 +20,8 @@ RUN pip install cx_Freeze \
                 black \
                 setuptools;
 
+RUN pip install --upgrade --pre --extra-index-url https://marcelotduarte.github.io/packages/ cx_Freeze
+
 COPY . .
 
-CMD ["sh"]
+CMD ['sh']
