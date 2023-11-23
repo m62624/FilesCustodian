@@ -79,7 +79,7 @@ jobs:
       - name: Build packages 
         run: |
           docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "python FilesCustodianGUI/setup.py build; ls build"
-          docker cp $(docker ps -lq):/main_project/build/*/main_window .;
+          docker cp $(docker ps -lq):/main_project/build/exe.linux-*/main_window .;
       - name: Save package to artifacts
         uses: actions/upload-artifact@v3
         with:
