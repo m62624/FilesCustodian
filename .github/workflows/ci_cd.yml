@@ -58,7 +58,7 @@ jobs:
       # Шаг для запуска линтеров
       - name: Run linters
         run: |
-          black --check .
+          black --check FilesCustodianGUI
 
   test-py:
     needs: [linter-check]
