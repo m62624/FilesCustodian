@@ -80,7 +80,7 @@ jobs:
 
       # Шаг для запуска тестов
       - name: Run tests
-        run: pytest FilesCustodianGUI/
+        run: pytest tests/*
 
   package-build:
     needs: [build-image]
@@ -90,7 +90,7 @@ jobs:
         run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
       - name: Build packages 
         run: |
-          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c " python FilesCustodianGUI/setup.py build; \
+          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "python FilesCustodianGUI/setup.py build;"
           docker cp $(docker ps -lq):/main_project/build/*/main_window .;
       - name: Save package to artifacts
         uses: actions/upload-artifact@v3
