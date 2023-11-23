@@ -64,23 +64,11 @@ jobs:
     needs: [linter-check]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Шаг для установки Python и инструментов для тестирования (pytest, например)
-      - name: Set up Python and testing tools
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install dependencies
+      - name: Log in to `GitHub Docker Registry`
+        run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
+      - name: Build packages 
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest  # Здесь укажите необходимые библиотеки для тестирования
-
-      # Шаг для запуска тестов
-      - name: Run tests
-        run: pytest tests/*
+          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "pytest tests/*"
 
   package-build:
     needs: [build-image]
