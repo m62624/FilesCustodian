@@ -84,7 +84,7 @@ jobs:
         run: pytest FilesCustodianGUI/
 
   package-build:
-    needs: [test-py]
+    needs: [build-image,test-py]
     runs-on: ubuntu-latest
     steps:
       - name: Log in to `GitHub Docker Registry`
