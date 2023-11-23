@@ -60,15 +60,15 @@ jobs:
         run: |
           black --check FilesCustodianGUI
 
-  # test-py:
-  #   needs: [linter-check]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Log in to `GitHub Docker Registry`
-  #       run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
-  #     - name: Build packages 
-  #       run: |
-  #         docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "pytest tests/*"
+  test-py:
+    needs: [linter-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to `GitHub Docker Registry`
+        run: echo ${{ secrets.PAT_GITHUB }} | docker login ghcr.io -u ${{ secrets.NAME_LOGIN }} --password-stdin
+      - name: Build packages 
+        run: |
+          docker run ${{ env.IMAGE_DOCKER }}:latest sh -c "pytest tests/*"
 
   package-build:
     needs: [build-image]
@@ -84,5 +84,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: python-app-${{ github.run_id }}
-          path: build
+          path: main_window
           
