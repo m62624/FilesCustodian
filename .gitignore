@@ -10,3 +10,4 @@
 /main_window.spec
 /build
 /dist
+/.pytest_cache
